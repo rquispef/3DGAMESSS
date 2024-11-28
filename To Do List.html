@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas Avanzada</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .todo-container {
+            background-color: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .todo-header {
+            background-color: #4a4a4a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .task-form {
+            padding: 15px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-form input, .task-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        .task-form input:focus, .task-form textarea:focus {
+            outline: none;
+            border-color: #4a4a4a;
+        }
+
+        .date-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-task-btn {
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-end;
+        }
+
+        .add-task-btn:hover {
+            background-color: #353535;
+        }
+
+        #todoList {
+            list-style-type: none;
+        }
+
+        .todo-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+
+        .todo-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .todo-item.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .todo-item-details {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .todo-item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .todo-item-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .todo-item-actions button:hover {
+            color: #4a4a4a;
+        }
+
+        .task-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+ }
+
+        .status-pending {
+            background-color: #ffd700;
+            color: #333;
+        }
+
+        .status-overdue {
+            background-color: #ff6347;
+            color: white;
+        }
+
+        .status-completed {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin-right: 5px;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .priority-high {
+            background-color: #ff4c4c;
+        }
+
+        .priority-medium {
+            background-color: #ffcc00;
+        }
+
+        .priority-low {
+            background-color: #4caf50;
+        }
+
+        .theme-selector {
+            margin: 10px 0;
+        }
+
+        .voice-input-btn {
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .voice-input-btn:hover {
+            background-color: #353535;
+        }
+    </style>
+</head>
+<body>
+    <div class="todo-container">
+        <div class="todo-header">
+            Lista de Tareas Avanzada
+        </div>
+        <div class="task-form">
+            <input type="text" id="taskTitle" placeholder="Título de la tarea">
+            <textarea id="taskDescription" placeholder="Descripción de la tarea" rows="3"></textarea>
+            <div class="date-row">
+                <input type="date" id="taskDueDate">
+                <input type="time" id="taskDueTime">
+            </div>
+            <select id="taskPriority">
+                <option value="low">Baja Prioridad</option>
+                <option value="medium">Media Prioridad</option>
+                <option value="high">Alta Prioridad</option>
+            </select>
+            <input type="text" id="taskTags" placeholder="Etiquetas (separadas por comas)">
+            <button onclick="addTask()" class="add-task-btn">Añadir Tarea</button>
+            <button onclick="startVoiceInput()" class="voice-input-btn">🎤 Hablar</button>
+        </div>
+        <ul id="todoList"></ul>
+        <div class="theme-selector">
+            <label for="themeSelect">Selecciona un tema:</label>
+            <select id="themeSelect" onchange="changeTheme()">
+                <option value="default">Por defecto</option>
+                <option value="dark">Oscuro</option>
+                <option value="light">Claro</option>
+            </select>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const dueDate = document.getElementById('taskDueDate').value;
+            const dueTime = document.getElementById('taskDueTime').value;
+            const priority = document.getElementById('taskPriority').value;
+            const tags = document.getElementById('taskTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (title) {
+                tasks.push({
+                    id: Date.now(),
+                    title: title,
+                    description: description,
+                    dueDate: dueDate,
+                    dueTime: dueTime,
+                    priority: priority,
+                    tags: tags,
+                    completed: false,
+                    createdAt: new Date()
+                });
+
+                // Reset form
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                document.getElementById('taskDueDate').value = '';
+                document.getElementById('taskDueTime').value = '';
+                document.getElementById('taskTags').value = '';
+
+                renderTasks();
+            }
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => 
+                task.id === id ? {...task, completed: !task.completed} : task
+            );
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+        }
+
+        function getTaskStatus(task) {
+            if (task.completed) return 'completed';
+            
+            if (task.dueDate) {
+                const dueDateTime = new Date(`${task.dueDate}T${task.dueTime || '23:59'}`);
+                const now = new Date();
+                
+                return dueDateTime < now ? 'overdue' : 'pending';
+            }
+            
+            return 'pending';
+        }
+
+        function renderTasks() {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('todo-item');
+                
+                const status = getTaskStatus(task);
+                const statusClass = `status-${status}`;
+
+                const tagElements = task.tags.map(tag => `<span class="tag" style="background-color: ${getTagColor(tag)};">${tag}</span>`).join('');
+
+                listItem.innerHTML = `
+                    <div class="todo-item-header">
+                        <span>${task.title}</span>
+                        <span class="task-status ${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                    </div>
+                    ${task.description ? `<div class="todo-item-details">${task.description}</div>` : ''}
+                    ${task.dueDate ? `<div class="todo-item-details">Vence: ${task.dueDate} ${task.dueTime || ''}</div>` : ''}
+                    <div class="todo-item-details">Prioridad: <span class="priority-${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span></div>
+                    <div class="todo-item-details">Etiquetas: ${tagElements}</div>
+                    <div class="todo-item-actions">
+                        <button onclick="toggleTask(${task.id})">
+                            <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                        </button>
+                        <button onclick="deleteTask(${task.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                todoList.appendChild(listItem);
+            });
+        }
+
+        function getTagColor(tag) {
+            const colors = {
+                'importante': '#ff4c4c',
+                'trabajo': '#ffcc00',
+                'personal': '#4caf50',
+                'estudio': '#2196F3',
+                'otro': '#9C27B0'
+            };
+            return colors[tag.toLowerCase()] || '#888'; // Color por defecto
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            const body = document.body;
+
+            if (theme === 'dark') {
+                body.style.backgroundColor = '#333';
+                body.style.color = '#fff';
+            } else if (theme === 'light') {
+                body.style.backgroundColor = '#f4f4f4';
+                body.style.color = '#000';
+            } else {
+                body.style.backgroundColor = '#fff';
+                body.style.color = '#000';
+            }
+        }
+
+        function startVoiceInput() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('taskTitle').value = transcript;
+            };
+
+            recognition.start();
+        }
+
+        renderTasks();
+    </script>
+</body>
+</html>
