@@ -1,2 +1,2 @@
-# 3DGAMESSS
-un juego en 3d de obstaculos
+# 2DGAMESSS
+un juego en 2d de disparos y To do List
